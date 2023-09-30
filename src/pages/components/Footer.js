@@ -1,5 +1,7 @@
+import "./style.css"
+
 export default function Footer (){
     return(
-        <small>© kos-dev.co.uk</small>
+        <small className="footer" >© kos-dev.co.uk</small>
     )
 };
