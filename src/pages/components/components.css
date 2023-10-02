@@ -1,6 +1,7 @@
 /* recipe section */
 .navItems{
-    display: block;
+    display: flex;
+    flex-direction: column;
     min-width: 40%;
     max-width: 5%;
     height: 30vh auto;
