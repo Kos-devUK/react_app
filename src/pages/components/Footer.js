@@ -2,6 +2,6 @@ import './components.css';
 
 export default function Footer (){
     return(
-        <small className="footer" >© kos-dev.co.uk</small>
+        <small className="footer" >&copy; kos-dev.co.uk</small>
     )
 };

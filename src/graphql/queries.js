@@ -6,10 +6,10 @@ export const getRecipes = /* GraphQL */ `
     getRecipes(id: $id) {
       id
       coffee_name
-      coffe_amount_gr
-      water_temperature_celcius
-      ground_size_mm
-      brewing_time_sec
+      coffee_amount
+      water_temperature
+      ground_size
+      brewing_time
       taste_aftertaste
       notes
       usersID
@@ -29,10 +29,10 @@ export const listRecipes = /* GraphQL */ `
       items {
         id
         coffee_name
-        coffe_amount_gr
-        water_temperature_celcius
-        ground_size_mm
-        brewing_time_sec
+        coffee_amount
+        water_temperature
+        ground_size
+        brewing_time
         taste_aftertaste
         notes
         usersID
@@ -63,10 +63,10 @@ export const recipesByUsersID = /* GraphQL */ `
       items {
         id
         coffee_name
-        coffe_amount_gr
-        water_temperature_celcius
-        ground_size_mm
-        brewing_time_sec
+        coffee_amount
+        water_temperature
+        ground_size
+        brewing_time
         taste_aftertaste
         notes
         usersID

@@ -45,7 +45,7 @@ export default function UsersUpdateForm(props) {
       const record = idProp
         ? (
             await API.graphql({
-              query: getUsers,
+              query: getUsers.replaceAll("__typename", ""),
               variables: { id: idProp },
             })
           )?.data?.getUsers
@@ -117,7 +117,7 @@ export default function UsersUpdateForm(props) {
             }
           });
           await API.graphql({
-            query: updateUsers,
+            query: updateUsers.replaceAll("__typename", ""),
             variables: {
               input: {
                 id: usersRecord.id,

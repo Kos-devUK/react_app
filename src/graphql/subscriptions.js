@@ -6,10 +6,10 @@ export const onCreateRecipes = /* GraphQL */ `
     onCreateRecipes(filter: $filter) {
       id
       coffee_name
-      coffe_amount_gr
-      water_temperature_celcius
-      ground_size_mm
-      brewing_time_sec
+      coffee_amount
+      water_temperature
+      ground_size
+      brewing_time
       taste_aftertaste
       notes
       usersID
@@ -24,10 +24,10 @@ export const onUpdateRecipes = /* GraphQL */ `
     onUpdateRecipes(filter: $filter) {
       id
       coffee_name
-      coffe_amount_gr
-      water_temperature_celcius
-      ground_size_mm
-      brewing_time_sec
+      coffee_amount
+      water_temperature
+      ground_size
+      brewing_time
       taste_aftertaste
       notes
       usersID
@@ -42,10 +42,10 @@ export const onDeleteRecipes = /* GraphQL */ `
     onDeleteRecipes(filter: $filter) {
       id
       coffee_name
-      coffe_amount_gr
-      water_temperature_celcius
-      ground_size_mm
-      brewing_time_sec
+      coffee_amount
+      water_temperature
+      ground_size
+      brewing_time
       taste_aftertaste
       notes
       usersID

@@ -1,0 +1,54 @@
+/***************************************************************************
+ * The contents of this file were generated with Amplify Studio.           *
+ * Please refrain from making any modifications to this file.              *
+ * Any changes to this file will be overwritten when running amplify pull. *
+ **************************************************************************/
+
+import * as React from "react";
+import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
+export declare type ValidationResponse = {
+    hasError: boolean;
+    errorMessage?: string;
+};
+export declare type ValidationFunction<T> = (value: T, validationResponse: ValidationResponse) => ValidationResponse | Promise<ValidationResponse>;
+export declare type RecipesCreateFormInputValues = {
+    coffee_name?: string;
+    coffee_amount?: string;
+    water_temperature?: string;
+    ground_size?: string;
+    brewing_time?: string;
+    taste_aftertaste?: string;
+    notes?: string;
+};
+export declare type RecipesCreateFormValidationValues = {
+    coffee_name?: ValidationFunction<string>;
+    coffee_amount?: ValidationFunction<string>;
+    water_temperature?: ValidationFunction<string>;
+    ground_size?: ValidationFunction<string>;
+    brewing_time?: ValidationFunction<string>;
+    taste_aftertaste?: ValidationFunction<string>;
+    notes?: ValidationFunction<string>;
+};
+export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
+export declare type RecipesCreateFormOverridesProps = {
+    RecipesCreateFormGrid?: PrimitiveOverrideProps<GridProps>;
+    coffee_name?: PrimitiveOverrideProps<TextFieldProps>;
+    coffee_amount?: PrimitiveOverrideProps<TextFieldProps>;
+    water_temperature?: PrimitiveOverrideProps<TextFieldProps>;
+    ground_size?: PrimitiveOverrideProps<TextFieldProps>;
+    brewing_time?: PrimitiveOverrideProps<TextFieldProps>;
+    taste_aftertaste?: PrimitiveOverrideProps<TextFieldProps>;
+    notes?: PrimitiveOverrideProps<TextFieldProps>;
+} & EscapeHatchProps;
+export declare type RecipesCreateFormProps = React.PropsWithChildren<{
+    overrides?: RecipesCreateFormOverridesProps | undefined | null;
+} & {
+    clearOnSuccess?: boolean;
+    onSubmit?: (fields: RecipesCreateFormInputValues) => RecipesCreateFormInputValues;
+    onSuccess?: (fields: RecipesCreateFormInputValues) => void;
+    onError?: (fields: RecipesCreateFormInputValues, errorMessage: string) => void;
+    onChange?: (fields: RecipesCreateFormInputValues) => RecipesCreateFormInputValues;
+    onValidate?: RecipesCreateFormValidationValues;
+} & React.CSSProperties>;
+export default function RecipesCreateForm(props: RecipesCreateFormProps): React.ReactElement;

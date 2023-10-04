@@ -1,12 +1,8 @@
-.main_div{
-
-}
-
 .baristalogo{
   width: 180px;
   display: block;
   max-width: auto;
-  position: static;
+  position: static;  
 }
 
 .signoutbutton{

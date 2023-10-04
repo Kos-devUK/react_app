@@ -1,10 +1,10 @@
 type Recipes @model @auth(rules: [{allow: public}]) {
   id: ID!
   coffee_name: String
-  coffe_amount_gr: Float
-  water_temperature_celcius: Float
-  ground_size_mm: Float
-  brewing_time_sec: Float
+  coffee_amount: String
+  water_temperature: String
+  ground_size: String
+  brewing_time: String
   taste_aftertaste: String
   notes: String
   usersID: ID! @index(name: "byUsers")
@@ -16,3 +16,4 @@ type Users @model @auth(rules: [{allow: public}]) {
   password: ID
   Recipes: [Recipes] @hasMany(indexName: "byUsers", fields: ["id"])
 }
+ 
