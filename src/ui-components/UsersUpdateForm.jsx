@@ -6,12 +6,181 @@
 
 /* eslint-disable */
 import * as React from "react";
-import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
+import {
+  Autocomplete,
+  Badge,
+  Button,
+  Divider,
+  Flex,
+  Grid,
+  Icon,
+  ScrollView,
+  Text,
+  TextField,
+  useTheme,
+} from "@aws-amplify/ui-react";
+import {
+  getOverrideProps,
+  useDataStoreBinding,
+} from "@aws-amplify/ui-react/internal";
+import { Users, Recipes as Recipes0 } from "../models";
 import { fetchByPath, validateField } from "./utils";
-import { API } from "aws-amplify";
-import { getUsers } from "../graphql/queries";
-import { updateUsers } from "../graphql/mutations";
+import { DataStore } from "aws-amplify";
+function ArrayField({
+  items = [],
+  onChange,
+  label,
+  inputFieldRef,
+  children,
+  hasError,
+  setFieldValue,
+  currentFieldValue,
+  defaultFieldValue,
+  lengthLimit,
+  getBadgeText,
+  runValidationTasks,
+  errorMessage,
+}) {
+  const labelElement = <Text>{label}</Text>;
+  const {
+    tokens: {
+      components: {
+        fieldmessages: { error: errorStyles },
+      },
+    },
+  } = useTheme();
+  const [selectedBadgeIndex, setSelectedBadgeIndex] = React.useState();
+  const [isEditing, setIsEditing] = React.useState();
+  React.useEffect(() => {
+    if (isEditing) {
+      inputFieldRef?.current?.focus();
+    }
+  }, [isEditing]);
+  const removeItem = async (removeIndex) => {
+    const newItems = items.filter((value, index) => index !== removeIndex);
+    await onChange(newItems);
+    setSelectedBadgeIndex(undefined);
+  };
+  const addItem = async () => {
+    const { hasError } = runValidationTasks();
+    if (
+      currentFieldValue !== undefined &&
+      currentFieldValue !== null &&
+      currentFieldValue !== "" &&
+      !hasError
+    ) {
+      const newItems = [...items];
+      if (selectedBadgeIndex !== undefined) {
+        newItems[selectedBadgeIndex] = currentFieldValue;
+        setSelectedBadgeIndex(undefined);
+      } else {
+        newItems.push(currentFieldValue);
+      }
+      await onChange(newItems);
+      setIsEditing(false);
+    }
+  };
+  const arraySection = (
+    <React.Fragment>
+      {!!items?.length && (
+        <ScrollView height="inherit" width="inherit" maxHeight={"7rem"}>
+          {items.map((value, index) => {
+            return (
+              <Badge
+                key={index}
+                style={{
+                  cursor: "pointer",
+                  alignItems: "center",
+                  marginRight: 3,
+                  marginTop: 3,
+                  backgroundColor:
+                    index === selectedBadgeIndex ? "#B8CEF9" : "",
+                }}
+                onClick={() => {
+                  setSelectedBadgeIndex(index);
+                  setFieldValue(items[index]);
+                  setIsEditing(true);
+                }}
+              >
+                {getBadgeText ? getBadgeText(value) : value.toString()}
+                <Icon
+                  style={{
+                    cursor: "pointer",
+                    paddingLeft: 3,
+                    width: 20,
+                    height: 20,
+                  }}
+                  viewBox={{ width: 20, height: 20 }}
+                  paths={[
+                    {
+                      d: "M10 10l5.09-5.09L10 10l5.09 5.09L10 10zm0 0L4.91 4.91 10 10l-5.09 5.09L10 10z",
+                      stroke: "black",
+                    },
+                  ]}
+                  ariaLabel="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeItem(index);
+                  }}
+                />
+              </Badge>
+            );
+          })}
+        </ScrollView>
+      )}
+      <Divider orientation="horizontal" marginTop={5} />
+    </React.Fragment>
+  );
+  if (lengthLimit !== undefined && items.length >= lengthLimit && !isEditing) {
+    return (
+      <React.Fragment>
+        {labelElement}
+        {arraySection}
+      </React.Fragment>
+    );
+  }
+  return (
+    <React.Fragment>
+      {labelElement}
+      {isEditing && children}
+      {!isEditing ? (
+        <>
+          <Button
+            onClick={() => {
+              setIsEditing(true);
+            }}
+          >
+            Add item
+          </Button>
+          {errorMessage && hasError && (
+            <Text color={errorStyles.color} fontSize={errorStyles.fontSize}>
+              {errorMessage}
+            </Text>
+          )}
+        </>
+      ) : (
+        <Flex justifyContent="flex-end">
+          {(currentFieldValue || isEditing) && (
+            <Button
+              children="Cancel"
+              type="button"
+              size="small"
+              onClick={() => {
+                setFieldValue(defaultFieldValue);
+                setIsEditing(false);
+                setSelectedBadgeIndex(undefined);
+              }}
+            ></Button>
+          )}
+          <Button size="small" variation="link" onClick={addItem}>
+            {selectedBadgeIndex !== undefined ? "Save" : "Add"}
+          </Button>
+        </Flex>
+      )}
+      {arraySection}
+    </React.Fragment>
+  );
+}
 export default function UsersUpdateForm(props) {
   const {
     id: idProp,
@@ -27,37 +196,62 @@ export default function UsersUpdateForm(props) {
   const initialValues = {
     email: "",
     password: "",
+    Recipes: [],
   };
   const [email, setEmail] = React.useState(initialValues.email);
   const [password, setPassword] = React.useState(initialValues.password);
+  const [Recipes, setRecipes] = React.useState(initialValues.Recipes);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = usersRecord
-      ? { ...initialValues, ...usersRecord }
+      ? { ...initialValues, ...usersRecord, Recipes: linkedRecipes }
       : initialValues;
     setEmail(cleanValues.email);
     setPassword(cleanValues.password);
+    setRecipes(cleanValues.Recipes ?? []);
+    setCurrentRecipesValue(undefined);
+    setCurrentRecipesDisplayValue("");
     setErrors({});
   };
   const [usersRecord, setUsersRecord] = React.useState(usersModelProp);
+  const [linkedRecipes, setLinkedRecipes] = React.useState([]);
+  const canUnlinkRecipes = true;
   React.useEffect(() => {
     const queryData = async () => {
       const record = idProp
-        ? (
-            await API.graphql({
-              query: getUsers.replaceAll("__typename", ""),
-              variables: { id: idProp },
-            })
-          )?.data?.getUsers
+        ? await DataStore.query(Users, idProp)
         : usersModelProp;
       setUsersRecord(record);
+      const linkedRecipes = record ? await record.Recipes.toArray() : [];
+      setLinkedRecipes(linkedRecipes);
     };
     queryData();
   }, [idProp, usersModelProp]);
-  React.useEffect(resetStateValues, [usersRecord]);
+  React.useEffect(resetStateValues, [usersRecord, linkedRecipes]);
+  const [currentRecipesDisplayValue, setCurrentRecipesDisplayValue] =
+    React.useState("");
+  const [currentRecipesValue, setCurrentRecipesValue] =
+    React.useState(undefined);
+  const RecipesRef = React.createRef();
+  const getIDValue = {
+    Recipes: (r) => JSON.stringify({ id: r?.id }),
+  };
+  const RecipesIdSet = new Set(
+    Array.isArray(Recipes)
+      ? Recipes.map((r) => getIDValue.Recipes?.(r))
+      : getIDValue.Recipes?.(Recipes)
+  );
+  const recipesRecords = useDataStoreBinding({
+    type: "collection",
+    model: Recipes0,
+  }).items;
+  const getDisplayValue = {
+    Recipes: (r) => `${r?.coffee_name ? r?.coffee_name + " - " : ""}${r?.id}`,
+  };
   const validations = {
     email: [{ type: "Email" }],
     password: [],
+    Recipes: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -85,21 +279,30 @@ export default function UsersUpdateForm(props) {
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
-          email: email ?? null,
-          password: password ?? null,
+          email,
+          password,
+          Recipes,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
             if (Array.isArray(modelFields[fieldName])) {
               promises.push(
                 ...modelFields[fieldName].map((item) =>
-                  runValidationTasks(fieldName, item)
+                  runValidationTasks(
+                    fieldName,
+                    item,
+                    getDisplayValue[fieldName]
+                  )
                 )
               );
               return promises;
             }
             promises.push(
-              runValidationTasks(fieldName, modelFields[fieldName])
+              runValidationTasks(
+                fieldName,
+                modelFields[fieldName],
+                getDisplayValue[fieldName]
+              )
             );
             return promises;
           }, [])
@@ -116,22 +319,66 @@ export default function UsersUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await API.graphql({
-            query: updateUsers.replaceAll("__typename", ""),
-            variables: {
-              input: {
-                id: usersRecord.id,
-                ...modelFields,
-              },
-            },
+          const promises = [];
+          const recipesToLink = [];
+          const recipesToUnLink = [];
+          const recipesSet = new Set();
+          const linkedRecipesSet = new Set();
+          Recipes.forEach((r) => recipesSet.add(getIDValue.Recipes?.(r)));
+          linkedRecipes.forEach((r) =>
+            linkedRecipesSet.add(getIDValue.Recipes?.(r))
+          );
+          linkedRecipes.forEach((r) => {
+            if (!recipesSet.has(getIDValue.Recipes?.(r))) {
+              recipesToUnLink.push(r);
+            }
           });
+          Recipes.forEach((r) => {
+            if (!linkedRecipesSet.has(getIDValue.Recipes?.(r))) {
+              recipesToLink.push(r);
+            }
+          });
+          recipesToUnLink.forEach((original) => {
+            if (!canUnlinkRecipes) {
+              throw Error(
+                `Recipes ${original.id} cannot be unlinked from Users because usersID is a required field.`
+              );
+            }
+            promises.push(
+              DataStore.save(
+                Recipes0.copyOf(original, (updated) => {
+                  updated.usersID = null;
+                })
+              )
+            );
+          });
+          recipesToLink.forEach((original) => {
+            promises.push(
+              DataStore.save(
+                Recipes0.copyOf(original, (updated) => {
+                  updated.usersID = usersRecord.id;
+                })
+              )
+            );
+          });
+          const modelFieldsToSave = {
+            email: modelFields.email,
+            password: modelFields.password,
+          };
+          promises.push(
+            DataStore.save(
+              Users.copyOf(usersRecord, (updated) => {
+                Object.assign(updated, modelFieldsToSave);
+              })
+            )
+          );
+          await Promise.all(promises);
           if (onSuccess) {
             onSuccess(modelFields);
           }
         } catch (err) {
           if (onError) {
-            const messages = err.errors.map((e) => e.message).join("\n");
-            onError(modelFields, messages);
+            onError(modelFields, err.message);
           }
         }
       }}
@@ -149,6 +396,7 @@ export default function UsersUpdateForm(props) {
             const modelFields = {
               email: value,
               password,
+              Recipes,
             };
             const result = onChange(modelFields);
             value = result?.email ?? value;
@@ -174,6 +422,7 @@ export default function UsersUpdateForm(props) {
             const modelFields = {
               email,
               password: value,
+              Recipes,
             };
             const result = onChange(modelFields);
             value = result?.password ?? value;
@@ -188,6 +437,84 @@ export default function UsersUpdateForm(props) {
         hasError={errors.password?.hasError}
         {...getOverrideProps(overrides, "password")}
       ></TextField>
+      <ArrayField
+        onChange={async (items) => {
+          let values = items;
+          if (onChange) {
+            const modelFields = {
+              email,
+              password,
+              Recipes: values,
+            };
+            const result = onChange(modelFields);
+            values = result?.Recipes ?? values;
+          }
+          setRecipes(values);
+          setCurrentRecipesValue(undefined);
+          setCurrentRecipesDisplayValue("");
+        }}
+        currentFieldValue={currentRecipesValue}
+        label={"Recipes"}
+        items={Recipes}
+        hasError={errors?.Recipes?.hasError}
+        runValidationTasks={async () =>
+          await runValidationTasks("Recipes", currentRecipesValue)
+        }
+        errorMessage={errors?.Recipes?.errorMessage}
+        getBadgeText={getDisplayValue.Recipes}
+        setFieldValue={(model) => {
+          setCurrentRecipesDisplayValue(
+            model ? getDisplayValue.Recipes(model) : ""
+          );
+          setCurrentRecipesValue(model);
+        }}
+        inputFieldRef={RecipesRef}
+        defaultFieldValue={""}
+      >
+        <Autocomplete
+          label="Recipes"
+          isRequired={false}
+          isReadOnly={false}
+          placeholder="Search Recipes"
+          value={currentRecipesDisplayValue}
+          options={recipesRecords
+            .filter((r) => !RecipesIdSet.has(getIDValue.Recipes?.(r)))
+            .map((r) => ({
+              id: getIDValue.Recipes?.(r),
+              label: getDisplayValue.Recipes?.(r),
+            }))}
+          onSelect={({ id, label }) => {
+            setCurrentRecipesValue(
+              recipesRecords.find((r) =>
+                Object.entries(JSON.parse(id)).every(
+                  ([key, value]) => r[key] === value
+                )
+              )
+            );
+            setCurrentRecipesDisplayValue(label);
+            runValidationTasks("Recipes", label);
+          }}
+          onClear={() => {
+            setCurrentRecipesDisplayValue("");
+          }}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (errors.Recipes?.hasError) {
+              runValidationTasks("Recipes", value);
+            }
+            setCurrentRecipesDisplayValue(value);
+            setCurrentRecipesValue(undefined);
+          }}
+          onBlur={() =>
+            runValidationTasks("Recipes", currentRecipesDisplayValue)
+          }
+          errorMessage={errors.Recipes?.errorMessage}
+          hasError={errors.Recipes?.hasError}
+          ref={RecipesRef}
+          labelHidden={true}
+          {...getOverrideProps(overrides, "Recipes")}
+        ></Autocomplete>
+      </ArrayField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

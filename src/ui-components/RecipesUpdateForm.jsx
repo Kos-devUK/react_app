@@ -6,12 +6,181 @@
 
 /* eslint-disable */
 import * as React from "react";
-import { Button, Flex, Grid, TextField } from "@aws-amplify/ui-react";
-import { getOverrideProps } from "@aws-amplify/ui-react/internal";
+import {
+  Autocomplete,
+  Badge,
+  Button,
+  Divider,
+  Flex,
+  Grid,
+  Icon,
+  ScrollView,
+  Text,
+  TextField,
+  useTheme,
+} from "@aws-amplify/ui-react";
+import {
+  getOverrideProps,
+  useDataStoreBinding,
+} from "@aws-amplify/ui-react/internal";
+import { Recipes, Users } from "../models";
 import { fetchByPath, validateField } from "./utils";
-import { API } from "aws-amplify";
-import { getRecipes } from "../graphql/queries";
-import { updateRecipes } from "../graphql/mutations";
+import { DataStore } from "aws-amplify";
+function ArrayField({
+  items = [],
+  onChange,
+  label,
+  inputFieldRef,
+  children,
+  hasError,
+  setFieldValue,
+  currentFieldValue,
+  defaultFieldValue,
+  lengthLimit,
+  getBadgeText,
+  runValidationTasks,
+  errorMessage,
+}) {
+  const labelElement = <Text>{label}</Text>;
+  const {
+    tokens: {
+      components: {
+        fieldmessages: { error: errorStyles },
+      },
+    },
+  } = useTheme();
+  const [selectedBadgeIndex, setSelectedBadgeIndex] = React.useState();
+  const [isEditing, setIsEditing] = React.useState();
+  React.useEffect(() => {
+    if (isEditing) {
+      inputFieldRef?.current?.focus();
+    }
+  }, [isEditing]);
+  const removeItem = async (removeIndex) => {
+    const newItems = items.filter((value, index) => index !== removeIndex);
+    await onChange(newItems);
+    setSelectedBadgeIndex(undefined);
+  };
+  const addItem = async () => {
+    const { hasError } = runValidationTasks();
+    if (
+      currentFieldValue !== undefined &&
+      currentFieldValue !== null &&
+      currentFieldValue !== "" &&
+      !hasError
+    ) {
+      const newItems = [...items];
+      if (selectedBadgeIndex !== undefined) {
+        newItems[selectedBadgeIndex] = currentFieldValue;
+        setSelectedBadgeIndex(undefined);
+      } else {
+        newItems.push(currentFieldValue);
+      }
+      await onChange(newItems);
+      setIsEditing(false);
+    }
+  };
+  const arraySection = (
+    <React.Fragment>
+      {!!items?.length && (
+        <ScrollView height="inherit" width="inherit" maxHeight={"7rem"}>
+          {items.map((value, index) => {
+            return (
+              <Badge
+                key={index}
+                style={{
+                  cursor: "pointer",
+                  alignItems: "center",
+                  marginRight: 3,
+                  marginTop: 3,
+                  backgroundColor:
+                    index === selectedBadgeIndex ? "#B8CEF9" : "",
+                }}
+                onClick={() => {
+                  setSelectedBadgeIndex(index);
+                  setFieldValue(items[index]);
+                  setIsEditing(true);
+                }}
+              >
+                {getBadgeText ? getBadgeText(value) : value.toString()}
+                <Icon
+                  style={{
+                    cursor: "pointer",
+                    paddingLeft: 3,
+                    width: 20,
+                    height: 20,
+                  }}
+                  viewBox={{ width: 20, height: 20 }}
+                  paths={[
+                    {
+                      d: "M10 10l5.09-5.09L10 10l5.09 5.09L10 10zm0 0L4.91 4.91 10 10l-5.09 5.09L10 10z",
+                      stroke: "black",
+                    },
+                  ]}
+                  ariaLabel="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    removeItem(index);
+                  }}
+                />
+              </Badge>
+            );
+          })}
+        </ScrollView>
+      )}
+      <Divider orientation="horizontal" marginTop={5} />
+    </React.Fragment>
+  );
+  if (lengthLimit !== undefined && items.length >= lengthLimit && !isEditing) {
+    return (
+      <React.Fragment>
+        {labelElement}
+        {arraySection}
+      </React.Fragment>
+    );
+  }
+  return (
+    <React.Fragment>
+      {labelElement}
+      {isEditing && children}
+      {!isEditing ? (
+        <>
+          <Button
+            onClick={() => {
+              setIsEditing(true);
+            }}
+          >
+            Add item
+          </Button>
+          {errorMessage && hasError && (
+            <Text color={errorStyles.color} fontSize={errorStyles.fontSize}>
+              {errorMessage}
+            </Text>
+          )}
+        </>
+      ) : (
+        <Flex justifyContent="flex-end">
+          {(currentFieldValue || isEditing) && (
+            <Button
+              children="Cancel"
+              type="button"
+              size="small"
+              onClick={() => {
+                setFieldValue(defaultFieldValue);
+                setIsEditing(false);
+                setSelectedBadgeIndex(undefined);
+              }}
+            ></Button>
+          )}
+          <Button size="small" variation="link" onClick={addItem}>
+            {selectedBadgeIndex !== undefined ? "Save" : "Add"}
+          </Button>
+        </Flex>
+      )}
+      {arraySection}
+    </React.Fragment>
+  );
+}
 export default function RecipesUpdateForm(props) {
   const {
     id: idProp,
@@ -32,6 +201,7 @@ export default function RecipesUpdateForm(props) {
     brewing_time: "",
     taste_aftertaste: "",
     notes: "",
+    usersID: undefined,
   };
   const [coffee_name, setCoffee_name] = React.useState(
     initialValues.coffee_name
@@ -52,10 +222,11 @@ export default function RecipesUpdateForm(props) {
     initialValues.taste_aftertaste
   );
   const [notes, setNotes] = React.useState(initialValues.notes);
+  const [usersID, setUsersID] = React.useState(initialValues.usersID);
   const [errors, setErrors] = React.useState({});
   const resetStateValues = () => {
     const cleanValues = recipesRecord
-      ? { ...initialValues, ...recipesRecord }
+      ? { ...initialValues, ...recipesRecord, usersID }
       : initialValues;
     setCoffee_name(cleanValues.coffee_name);
     setCoffee_amount(cleanValues.coffee_amount);
@@ -64,24 +235,36 @@ export default function RecipesUpdateForm(props) {
     setBrewing_time(cleanValues.brewing_time);
     setTaste_aftertaste(cleanValues.taste_aftertaste);
     setNotes(cleanValues.notes);
+    setUsersID(cleanValues.usersID);
+    setCurrentUsersIDValue(undefined);
+    setCurrentUsersIDDisplayValue("");
     setErrors({});
   };
   const [recipesRecord, setRecipesRecord] = React.useState(recipesModelProp);
   React.useEffect(() => {
     const queryData = async () => {
       const record = idProp
-        ? (
-            await API.graphql({
-              query: getRecipes.replaceAll("__typename", ""),
-              variables: { id: idProp },
-            })
-          )?.data?.getRecipes
+        ? await DataStore.query(Recipes, idProp)
         : recipesModelProp;
       setRecipesRecord(record);
+      const usersIDRecord = record ? await record.usersID : undefined;
+      setUsersID(usersIDRecord);
     };
     queryData();
   }, [idProp, recipesModelProp]);
-  React.useEffect(resetStateValues, [recipesRecord]);
+  React.useEffect(resetStateValues, [recipesRecord, usersID]);
+  const [currentUsersIDDisplayValue, setCurrentUsersIDDisplayValue] =
+    React.useState("");
+  const [currentUsersIDValue, setCurrentUsersIDValue] =
+    React.useState(undefined);
+  const usersIDRef = React.createRef();
+  const usersRecords = useDataStoreBinding({
+    type: "collection",
+    model: Users,
+  }).items;
+  const getDisplayValue = {
+    usersID: (r) => `${r?.email ? r?.email + " - " : ""}${r?.id}`,
+  };
   const validations = {
     coffee_name: [],
     coffee_amount: [],
@@ -90,6 +273,7 @@ export default function RecipesUpdateForm(props) {
     brewing_time: [],
     taste_aftertaste: [],
     notes: [],
+    usersID: [],
   };
   const runValidationTasks = async (
     fieldName,
@@ -117,13 +301,14 @@ export default function RecipesUpdateForm(props) {
       onSubmit={async (event) => {
         event.preventDefault();
         let modelFields = {
-          coffee_name: coffee_name ?? null,
-          coffee_amount: coffee_amount ?? null,
-          water_temperature: water_temperature ?? null,
-          ground_size: ground_size ?? null,
-          brewing_time: brewing_time ?? null,
-          taste_aftertaste: taste_aftertaste ?? null,
-          notes: notes ?? null,
+          coffee_name,
+          coffee_amount,
+          water_temperature,
+          ground_size,
+          brewing_time,
+          taste_aftertaste,
+          notes,
+          usersID,
         };
         const validationResponses = await Promise.all(
           Object.keys(validations).reduce((promises, fieldName) => {
@@ -153,22 +338,17 @@ export default function RecipesUpdateForm(props) {
               modelFields[key] = null;
             }
           });
-          await API.graphql({
-            query: updateRecipes.replaceAll("__typename", ""),
-            variables: {
-              input: {
-                id: recipesRecord.id,
-                ...modelFields,
-              },
-            },
-          });
+          await DataStore.save(
+            Recipes.copyOf(recipesRecord, (updated) => {
+              Object.assign(updated, modelFields);
+            })
+          );
           if (onSuccess) {
             onSuccess(modelFields);
           }
         } catch (err) {
           if (onError) {
-            const messages = err.errors.map((e) => e.message).join("\n");
-            onError(modelFields, messages);
+            onError(modelFields, err.message);
           }
         }
       }}
@@ -191,6 +371,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time,
               taste_aftertaste,
               notes,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.coffee_name ?? value;
@@ -221,6 +402,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time,
               taste_aftertaste,
               notes,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.coffee_amount ?? value;
@@ -251,6 +433,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time,
               taste_aftertaste,
               notes,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.water_temperature ?? value;
@@ -283,6 +466,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time,
               taste_aftertaste,
               notes,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.ground_size ?? value;
@@ -313,6 +497,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time: value,
               taste_aftertaste,
               notes,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.brewing_time ?? value;
@@ -343,6 +528,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time,
               taste_aftertaste: value,
               notes,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.taste_aftertaste ?? value;
@@ -373,6 +559,7 @@ export default function RecipesUpdateForm(props) {
               brewing_time,
               taste_aftertaste,
               notes: value,
+              usersID,
             };
             const result = onChange(modelFields);
             value = result?.notes ?? value;
@@ -387,6 +574,93 @@ export default function RecipesUpdateForm(props) {
         hasError={errors.notes?.hasError}
         {...getOverrideProps(overrides, "notes")}
       ></TextField>
+      <ArrayField
+        lengthLimit={1}
+        onChange={async (items) => {
+          let value = items[0];
+          if (onChange) {
+            const modelFields = {
+              coffee_name,
+              coffee_amount,
+              water_temperature,
+              ground_size,
+              brewing_time,
+              taste_aftertaste,
+              notes,
+              usersID: value,
+            };
+            const result = onChange(modelFields);
+            value = result?.usersID ?? value;
+          }
+          setUsersID(value);
+          setCurrentUsersIDValue(undefined);
+        }}
+        currentFieldValue={currentUsersIDValue}
+        label={"Users id"}
+        items={usersID ? [usersID] : []}
+        hasError={errors?.usersID?.hasError}
+        runValidationTasks={async () =>
+          await runValidationTasks("usersID", currentUsersIDValue)
+        }
+        errorMessage={errors?.usersID?.errorMessage}
+        getBadgeText={(value) =>
+          value
+            ? getDisplayValue.usersID(usersRecords.find((r) => r.id === value))
+            : ""
+        }
+        setFieldValue={(value) => {
+          setCurrentUsersIDDisplayValue(
+            value
+              ? getDisplayValue.usersID(
+                  usersRecords.find((r) => r.id === value)
+                )
+              : ""
+          );
+          setCurrentUsersIDValue(value);
+        }}
+        inputFieldRef={usersIDRef}
+        defaultFieldValue={""}
+      >
+        <Autocomplete
+          label="Users id"
+          isRequired={false}
+          isReadOnly={false}
+          placeholder="Search Users"
+          value={currentUsersIDDisplayValue}
+          options={usersRecords
+            .filter(
+              (r, i, arr) =>
+                arr.findIndex((member) => member?.id === r?.id) === i
+            )
+            .map((r) => ({
+              id: r?.id,
+              label: getDisplayValue.usersID?.(r),
+            }))}
+          onSelect={({ id, label }) => {
+            setCurrentUsersIDValue(id);
+            setCurrentUsersIDDisplayValue(label);
+            runValidationTasks("usersID", label);
+          }}
+          onClear={() => {
+            setCurrentUsersIDDisplayValue("");
+          }}
+          defaultValue={usersID}
+          onChange={(e) => {
+            let { value } = e.target;
+            if (errors.usersID?.hasError) {
+              runValidationTasks("usersID", value);
+            }
+            setCurrentUsersIDDisplayValue(value);
+            setCurrentUsersIDValue(undefined);
+          }}
+          onBlur={() => runValidationTasks("usersID", currentUsersIDValue)}
+          errorMessage={errors.usersID?.errorMessage}
+          hasError={errors.usersID?.hasError}
+          ref={usersIDRef}
+          labelHidden={true}
+          {...getOverrideProps(overrides, "usersID")}
+        ></Autocomplete>
+      </ArrayField>
       <Flex
         justifyContent="space-between"
         {...getOverrideProps(overrides, "CTAFlex")}

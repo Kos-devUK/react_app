@@ -15,9 +15,10 @@ function HomePage(){
                 <Col sm={6}>
                     <h1>Welcome to barista's journal</h1>
                     <p>An app to keep all your recipes together</p>
-                    <Link to={{pathname:'/recipes'}} > 
-                    <Button>View Recipes</Button></Link>
-                    
+                    <Link to={{pathname:'/recipes'}} > <br/>
+                    <Button>View Recipes</Button></Link> <br />
+                    <Link to={{pathname:'/manage'}}>
+                    <Button>Manage Recipes</Button></Link>
                 </Col>
         </Row>
         </Container>

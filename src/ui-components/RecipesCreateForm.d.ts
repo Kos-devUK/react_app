@@ -5,7 +5,7 @@
  **************************************************************************/
 
 import * as React from "react";
-import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { AutocompleteProps, GridProps, TextFieldProps } from "@aws-amplify/ui-react";
 import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
 export declare type ValidationResponse = {
     hasError: boolean;
@@ -20,6 +20,7 @@ export declare type RecipesCreateFormInputValues = {
     brewing_time?: string;
     taste_aftertaste?: string;
     notes?: string;
+    usersID?: string;
 };
 export declare type RecipesCreateFormValidationValues = {
     coffee_name?: ValidationFunction<string>;
@@ -29,6 +30,7 @@ export declare type RecipesCreateFormValidationValues = {
     brewing_time?: ValidationFunction<string>;
     taste_aftertaste?: ValidationFunction<string>;
     notes?: ValidationFunction<string>;
+    usersID?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type RecipesCreateFormOverridesProps = {
@@ -40,6 +42,7 @@ export declare type RecipesCreateFormOverridesProps = {
     brewing_time?: PrimitiveOverrideProps<TextFieldProps>;
     taste_aftertaste?: PrimitiveOverrideProps<TextFieldProps>;
     notes?: PrimitiveOverrideProps<TextFieldProps>;
+    usersID?: PrimitiveOverrideProps<AutocompleteProps>;
 } & EscapeHatchProps;
 export declare type RecipesCreateFormProps = React.PropsWithChildren<{
     overrides?: RecipesCreateFormOverridesProps | undefined | null;

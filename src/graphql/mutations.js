@@ -18,6 +18,9 @@ export const createRecipes = /* GraphQL */ `
       usersID
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -39,6 +42,9 @@ export const updateRecipes = /* GraphQL */ `
       usersID
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -60,6 +66,9 @@ export const deleteRecipes = /* GraphQL */ `
       usersID
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -75,10 +84,14 @@ export const createUsers = /* GraphQL */ `
       password
       Recipes {
         nextToken
+        startedAt
         __typename
       }
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -94,10 +107,14 @@ export const updateUsers = /* GraphQL */ `
       password
       Recipes {
         nextToken
+        startedAt
         __typename
       }
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -113,10 +130,14 @@ export const deleteUsers = /* GraphQL */ `
       password
       Recipes {
         nextToken
+        startedAt
         __typename
       }
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }

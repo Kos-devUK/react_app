@@ -19,7 +19,7 @@ type EagerRecipes = {
   readonly brewing_time?: string | null;
   readonly taste_aftertaste?: string | null;
   readonly notes?: string | null;
-  readonly usersID: string;
+  readonly usersID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -37,7 +37,7 @@ type LazyRecipes = {
   readonly brewing_time?: string | null;
   readonly taste_aftertaste?: string | null;
   readonly notes?: string | null;
-  readonly usersID: string;
+  readonly usersID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

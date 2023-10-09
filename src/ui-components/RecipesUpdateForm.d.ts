@@ -5,8 +5,9 @@
  **************************************************************************/
 
 import * as React from "react";
-import { GridProps, TextFieldProps } from "@aws-amplify/ui-react";
+import { AutocompleteProps, GridProps, TextFieldProps } from "@aws-amplify/ui-react";
 import { EscapeHatchProps } from "@aws-amplify/ui-react/internal";
+import { Recipes } from "../models";
 export declare type ValidationResponse = {
     hasError: boolean;
     errorMessage?: string;
@@ -20,6 +21,7 @@ export declare type RecipesUpdateFormInputValues = {
     brewing_time?: string;
     taste_aftertaste?: string;
     notes?: string;
+    usersID?: string;
 };
 export declare type RecipesUpdateFormValidationValues = {
     coffee_name?: ValidationFunction<string>;
@@ -29,6 +31,7 @@ export declare type RecipesUpdateFormValidationValues = {
     brewing_time?: ValidationFunction<string>;
     taste_aftertaste?: ValidationFunction<string>;
     notes?: ValidationFunction<string>;
+    usersID?: ValidationFunction<string>;
 };
 export declare type PrimitiveOverrideProps<T> = Partial<T> & React.DOMAttributes<HTMLDivElement>;
 export declare type RecipesUpdateFormOverridesProps = {
@@ -40,12 +43,13 @@ export declare type RecipesUpdateFormOverridesProps = {
     brewing_time?: PrimitiveOverrideProps<TextFieldProps>;
     taste_aftertaste?: PrimitiveOverrideProps<TextFieldProps>;
     notes?: PrimitiveOverrideProps<TextFieldProps>;
+    usersID?: PrimitiveOverrideProps<AutocompleteProps>;
 } & EscapeHatchProps;
 export declare type RecipesUpdateFormProps = React.PropsWithChildren<{
     overrides?: RecipesUpdateFormOverridesProps | undefined | null;
 } & {
     id?: string;
-    recipes?: any;
+    recipes?: Recipes;
     onSubmit?: (fields: RecipesUpdateFormInputValues) => RecipesUpdateFormInputValues;
     onSuccess?: (fields: RecipesUpdateFormInputValues) => void;
     onError?: (fields: RecipesUpdateFormInputValues, errorMessage: string) => void;

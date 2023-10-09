@@ -82,7 +82,7 @@ return (
                                 <CardBody>
                                     <CardTitle>{recipe.coffee_name}</CardTitle>
                                         <CardText>
-                                            {recipe.coffee_amount}gr coffee<br />
+                                            {recipe.coffee_amount} gr<br />
                                             {recipe.water_temperature} °C<br />
                                             {recipe.ground_size} ground size<br />
                                             {recipe.brewing_time}sec<br />
@@ -90,6 +90,8 @@ return (
                                             {recipe.notes}
                                         </CardText>
                                 </CardBody>
+                                <Button variant="primary" type="button">Update recipe &gt; &nbsp;</Button>
+                                <Button variant="primary" type="button">Remove &gt; &nbsp;&gt; &nbsp;</Button>
                             </Card>
                         </Col>
                     )

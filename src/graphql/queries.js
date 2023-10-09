@@ -15,6 +15,9 @@ export const getRecipes = /* GraphQL */ `
       usersID
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -38,9 +41,49 @@ export const listRecipes = /* GraphQL */ `
         usersID
         createdAt
         updatedAt
+        _version
+        _deleted
+        _lastChangedAt
         __typename
       }
       nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncRecipes = /* GraphQL */ `
+  query SyncRecipes(
+    $filter: ModelRecipesFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncRecipes(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        coffee_name
+        coffee_amount
+        water_temperature
+        ground_size
+        brewing_time
+        taste_aftertaste
+        notes
+        usersID
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
       __typename
     }
   }
@@ -72,9 +115,13 @@ export const recipesByUsersID = /* GraphQL */ `
         usersID
         createdAt
         updatedAt
+        _version
+        _deleted
+        _lastChangedAt
         __typename
       }
       nextToken
+      startedAt
       __typename
     }
   }
@@ -87,10 +134,14 @@ export const getUsers = /* GraphQL */ `
       password
       Recipes {
         nextToken
+        startedAt
         __typename
       }
       createdAt
       updatedAt
+      _version
+      _deleted
+      _lastChangedAt
       __typename
     }
   }
@@ -108,9 +159,43 @@ export const listUsers = /* GraphQL */ `
         password
         createdAt
         updatedAt
+        _version
+        _deleted
+        _lastChangedAt
         __typename
       }
       nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncUsers = /* GraphQL */ `
+  query SyncUsers(
+    $filter: ModelUsersFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncUsers(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        email
+        password
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
       __typename
     }
   }
