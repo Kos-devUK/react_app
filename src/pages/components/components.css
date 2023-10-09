@@ -1,6 +1,29 @@
+/*                  SiteNav.js          */
+.navbar{
+    background-color: darkblue;
+}
+
+
+
+/*                  HomePage.js         */
 .baristalogo{
     width: 180px;
     display: block;
     max-width: auto;
     position: static;
+}
+
+
+
+
+/*                  ViewRecipes.js      */
+.displayrecipes{
+    width: 12vw;
+    height: 24vh;
+}
+
+.addrecipes{
+    width: 12vw;
+    height: 45vh;
+    background-color: cyan;
 }

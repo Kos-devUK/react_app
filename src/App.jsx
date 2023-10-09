@@ -5,7 +5,7 @@ import awsExports from "./aws-exports";
 
 import HomePage from "./pages/components/HomePage";
 import SiteNav from "./pages/components/SiteNav";
-import Recipes from './pages/components/Recipes';
+import ViewRecipes from './pages/components/ViewRecipes';
 import Footer from "./pages/components/Footer";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -51,7 +51,7 @@ function App(){
       <Routes>
         <Route path="*" element={<HomePage />}/>
         <Route path="/" exact={true}  element={<HomePage/>} />
-        <Route path="/recipes" element={<Recipes/>} />
+        <Route path="/recipes" element={<ViewRecipes/>} />
       </Routes>
       <Footer />
     </div>

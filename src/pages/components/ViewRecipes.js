@@ -6,9 +6,9 @@ import { listRecipes } from '../../graphql/queries';
 
 import { v4 as uuid } from 'uuid';
 import { CardBody,  CardText, CardTitle, Button, Form, Col, Card, Row, Container } from 'react-bootstrap';
+import "./components.css"
 
-
-function Recipes () {
+function ViewRecipes () {
     const [recipes, setRecipes]= useState([]);
     const [recipesData, setRecipesData] = useState ({coffee_name: "", coffee_amount: "", water_temperature: "", ground_size: "", brewing_time: "", taste_aftertaste: "", notes: "" });
 
@@ -78,31 +78,32 @@ return (
                 recipes.map((recipe,indx) => {
                     return (
                         <Col key={indx} >
-                            <Card style={{width: '12rem', height :'14rem'}}>
+                            <Card className='displayrecipes'>
                                 <CardBody>
                                     <CardTitle>{recipe.coffee_name}</CardTitle>
                                         <CardText>
                                             {recipe.coffee_amount} gr<br />
                                             {recipe.water_temperature} °C<br />
                                             {recipe.ground_size} ground size<br />
-                                            {recipe.brewing_time}sec<br />
+                                            {recipe.brewing_time} sec<br />
                                             {recipe.taste_aftertaste}<br />
-                                            {recipe.notes}
+                                            {recipe.notes} <br />
+                                            <Button>update</Button>
+                                            <Button>remove</Button>
                                         </CardText>
                                 </CardBody>
-                                <Button variant="primary" type="button">Update recipe &gt; &nbsp;</Button>
-                                <Button variant="primary" type="button">Remove &gt; &nbsp;&gt; &nbsp;</Button>
                             </Card>
                         </Col>
                     )
                 })
             }
         </Row>
-
+        
+        
         <Row>
             <Col> <h2>Add new recipes</h2>
 
-            <Form style={{width: '12rem', height :'14rem'}}>
+            <Form className='addrecipes'>
 
             <Form.Group controlId="formBasicText">
             <Form.Label>coffee name</Form.Label>
@@ -167,4 +168,4 @@ return (
         </Container>
     )};
 
-export default Recipes;
+export default ViewRecipes;
