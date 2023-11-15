@@ -6,11 +6,10 @@ import awsExports from "./aws-exports";
 import HomePage from "./pages/components/HomePage";
 import SiteNav from "./pages/components/SiteNav";
 import ViewRecipes from './pages/components/ViewRecipes';
-import Footer from "./pages/components/Footer";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "@aws-amplify/ui-react/styles.css";
-import "./App.css";
+import "./style.css";
 
 import { Amplify } from 'aws-amplify';
 Amplify.configure(awsExports);
@@ -53,10 +52,10 @@ function App(){
         <Route path="/" exact={true}  element={<HomePage/>} />
         <Route path="/recipes" element={<ViewRecipes/>} />
       </Routes>
-      <Footer />
     </div>
     )}
     </Authenticator>
-);}
+  );
+}
 
 export default (App);

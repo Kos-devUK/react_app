@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button, Container } from "react-bootstrap";
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Image from 'react-bootstrap/Image';
+import { Button, Container, Row, Col, Image } from "react-bootstrap";
 import './components.css';
 
 function HomePage(){

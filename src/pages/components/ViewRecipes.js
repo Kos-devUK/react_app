@@ -67,6 +67,10 @@ function ViewRecipes () {
         }
 };
 
+            //Update Recipes
+
+            //Remove Recipes
+
 return (
     <Container>
         <Row>
